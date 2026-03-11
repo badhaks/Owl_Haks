@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OHAKS_Desk · 매크로</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090C;--s1:#0F1117;--s2:#161820;--s3:#1E2028;
+  --b1:#2E3240;--b2:#3D4255;
+  --t1:#F0F2FF;--t2:#A0A8C0;--t3:#606880;
+  --green:#22C55E;--red:#EF4444;--blue:#6366F1;
+  --amber:#F59E0B;--cyan:#06B6D4;--purple:#A855F7;
+  --green-bg:rgba(34,197,94,.08);--green-border:rgba(34,197,94,.25);
+  --red-bg:rgba(239,68,68,.08);--red-border:rgba(239,68,68,.25);
+  --blue-bg:rgba(99,102,241,.12);--blue-border:rgba(99,102,241,.3);
+  --amber-bg:rgba(245,158,11,.08);--amber-border:rgba(245,158,11,.25);
+  --ui:"Inter",sans-serif;--mono:"DM Mono",monospace;
+  --r8:8px;--r12:12px;--r16:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t1);font-family:var(--ui);font-size:13px;min-height:100vh}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;height:52px;display:flex;align-items:center;padding:0 20px;gap:16px;background:rgba(8,9,12,.88);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.05)}
+.logo{font-size:14px;font-weight:700;letter-spacing:-.02em;background:linear-gradient(135deg,#fff 60%,rgba(255,255,255,.4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;cursor:pointer;white-space:nowrap}
+.logo em{font-style:normal;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:2px}
+.nl{font-size:12px;font-weight:500;color:var(--t3);padding:5px 10px;border-radius:6px;cursor:pointer;transition:all .15s}
+.nl:hover{color:var(--t2);background:var(--s2)}
+.nl.act{background:var(--s3);color:var(--t1)}
+.topbar-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.chip{display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--s2);border:1px solid rgba(255,255,255,.06);border-radius:20px;font-size:10.5px;font-weight:500;color:var(--t2)}
+.chip-dot{width:6px;height:6px;border-radius:50%}
+.chip-dot.open{background:var(--green);box-shadow:0 0 6px var(--green)}
+.chip-dot.closed{background:var(--t3)}
+.clk{font-family:var(--mono);font-size:11px;color:var(--t3);min-width:64px;text-align:right}
+.kis-pill{font-size:10.5px;font-weight:500;padding:5px 11px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--t3);cursor:pointer;transition:all .15s}
+.kis-pill:hover{border-color:var(--blue-border);color:var(--blue)}
+
+/* LAYOUT */
+.page{max-width:1500px;margin:0 auto;padding:20px 20px 40px}
+.main-grid{display:grid;grid-template-columns:360px 1fr;gap:14px;align-items:start}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid rgba(255,255,255,.05);border-radius:var(--r16);overflow:hidden;margin-bottom:12px}
+.card:last-child{margin-bottom:0}
+.card-head{padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.card-ts{font-size:9px;font-family:var(--mono);color:var(--t3)}
+.card-body{padding:0}
+
+/* 경제지표 ROW */
+.ind-row{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.03);display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:8px;transition:background .12s}
+.ind-row:hover{background:rgba(255,255,255,.015)}
+.ind-row:last-child{border-bottom:none}
+.ind-name{font-size:11.5px;font-weight:500;color:var(--t2)}
+.ind-sub{font-size:9.5px;color:var(--t3);margin-top:1px}
+.ind-val{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--t1);text-align:right;min-width:64px}
+.ind-prev{font-size:9.5px;font-family:var(--mono);color:var(--t3);text-align:right;min-width:54px}
+.ind-delta{font-size:10px;font-family:var(--mono);font-weight:600;text-align:right;min-width:48px}
+.ind-delta.up{color:var(--green)}
+.ind-delta.dn{color:var(--red)}
+.ind-delta.flat{color:var(--t3)}
+.ind-skeleton{width:48px;height:12px;background:var(--s3);border-radius:4px;animation:sk 1.4s ease infinite}
+@keyframes sk{0%,100%{opacity:.4}50%{opacity:.9}}
+
+/* 연준 섹션 */
+.fomc-row{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.03);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fomc-row:last-child{border-bottom:none}
+.fomc-date{font-size:11px;font-family:var(--mono);color:var(--t2)}
+.fomc-label{font-size:10px;color:var(--t3);margin-top:1px}
+.fomc-tag{font-size:9.5px;font-weight:600;padding:3px 8px;border-radius:4px}
+.fomc-tag.live{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)}
+.fomc-tag.next{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber)}
+.fomc-tag.done{background:var(--s3);color:var(--t3)}
+
+/* Fed Watch 확률 바 */
+.fw-row{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.03)}
+.fw-row:last-child{border-bottom:none}
+.fw-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.fw-label{font-size:11px;color:var(--t2)}
+.fw-prob{font-family:var(--mono);font-size:12px;font-weight:600}
+.fw-prob.high{color:var(--green)}
+.fw-prob.mid{color:var(--amber)}
+.fw-prob.low{color:var(--t3)}
+.fw-bar{height:4px;background:var(--s3);border-radius:2px;overflow:hidden}
+.fw-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.fw-fill.hold{background:var(--amber)}
+.fw-fill.cut{background:var(--green)}
+.fw-fill.hike{background:var(--red)}
+
+/* PMI 그리드 */
+.pmi-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.03)}
+.pmi-cell{padding:10px 14px;background:var(--s1)}
+.pmi-country{font-size:9.5px;font-weight:700;letter-spacing:.06em;color:var(--t3);text-transform:uppercase;margin-bottom:3px}
+.pmi-type{font-size:8.5px;color:var(--t3);margin-bottom:5px}
+.pmi-val{font-family:var(--mono);font-size:16px;font-weight:600;line-height:1}
+.pmi-val.exp{color:var(--green)}
+.pmi-val.con{color:var(--red)}
+.pmi-val.neu{color:var(--t2)}
+.pmi-prev{font-size:9px;color:var(--t3);margin-top:3px}
+
+/* RIGHT: AI 코멘트 */
+.ai-card{background:var(--s1);border:1px solid rgba(255,255,255,.05);border-radius:var(--r16);overflow:hidden;position:sticky;top:68px}
+.ai-head{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ai-title{font-size:13px;font-weight:600;color:var(--t1)}
+.ai-meta{font-size:10px;color:var(--t3);font-family:var(--mono);margin-top:2px}
+.ai-actions{display:flex;gap:6px;flex-shrink:0}
+.ai-btn{font-size:11px;font-weight:500;padding:5px 11px;border-radius:6px;cursor:pointer;border:1px solid var(--b1);background:var(--s2);color:var(--t2);transition:all .15s}
+.ai-btn:hover{border-color:var(--b2);color:var(--t1)}
+.ai-btn.regen{border-color:var(--blue-border);background:var(--blue-bg);color:var(--blue)}
+.ai-btn.regen:hover{background:var(--blue);color:#fff}
+.ai-btn:disabled{opacity:.4;cursor:not-allowed}
+.ai-body{padding:22px 24px;line-height:1.8;color:var(--t2);font-size:13px;min-height:400px;max-height:calc(100vh - 200px);overflow-y:auto}
+.ai-placeholder{padding:60px 24px;text-align:center}
+.ai-ph-icon{font-size:36px;margin-bottom:14px;opacity:.2}
+.ai-ph-text{font-size:12px;color:var(--t3);line-height:1.7}
+
+/* 로딩 인디케이터 */
+.loading-dots{display:inline-flex;gap:4px;align-items:center;padding:20px 0}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:bounce .9s ease infinite}
+.dot:nth-child(2){animation-delay:.15s}
+.dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+
+/* 마크다운 */
+.ai-body h1{font-size:17px;font-weight:700;color:var(--t1);border-bottom:1px solid rgba(255,255,255,.07);padding-bottom:8px;margin:20px 0 12px}
+.ai-body h2{font-size:14px;font-weight:600;color:var(--blue);margin:18px 0 9px}
+.ai-body h3{font-size:13px;font-weight:600;color:var(--cyan);margin:14px 0 7px}
+.ai-body p{margin-bottom:11px}
+.ai-body ul,.ai-body ol{padding-left:18px;margin-bottom:11px}
+.ai-body li{margin-bottom:4px}
+.ai-body strong{color:var(--t1);font-weight:600}
+.ai-body em{color:var(--amber);font-style:normal}
+.ai-body code{font-family:var(--mono);font-size:11px;background:var(--s3);padding:2px 6px;border-radius:3px;color:var(--cyan)}
+.ai-body blockquote{border-left:3px solid var(--blue);padding:8px 14px;background:var(--s2);border-radius:0 6px 6px 0;margin:12px 0;font-size:12.5px}
+.ai-body table{width:100%;border-collapse:collapse;margin:14px 0;font-size:12px}
+.ai-body th{padding:8px 11px;background:var(--s3);color:var(--t3);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-align:left;border-bottom:1px solid var(--b1)}
+.ai-body td{padding:8px 11px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--t2)}
+.ai-body tr:hover td{background:rgba(255,255,255,.015)}
+.tag-bull{display:inline-block;padding:2px 7px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);border-radius:4px;font-size:9.5px;font-weight:700;margin:0 2px}
+.tag-bear{display:inline-block;padding:2px 7px;background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);border-radius:4px;font-size:9.5px;font-weight:700;margin:0 2px}
+.cursor{display:inline-block;width:2px;height:13px;background:var(--blue);animation:blink .7s infinite;vertical-align:middle;margin-left:2px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.error-bar{padding:10px 14px;background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--r8);color:var(--red);font-size:12px;margin:12px}
+
+/* CALENDAR */
+.cal-section{margin-top:14px}
+.cal-card{background:var(--s1);border:1px solid rgba(255,255,255,.05);border-radius:var(--r16);overflow:hidden}
+.cal-head{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:space-between}
+.cal-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.cal-filter{display:flex;gap:4px}
+.cf-btn{font-size:10px;font-weight:500;padding:3px 9px;border-radius:4px;cursor:pointer;border:1px solid var(--b1);background:transparent;color:var(--t3);transition:all .12s}
+.cf-btn:hover,.cf-btn.act{background:var(--s3);border-color:var(--b2);color:var(--t2)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid rgba(255,255,255,.04)}
+.cal-dow{padding:8px 0;text-align:center;font-size:9.5px;font-weight:700;letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
+.cal-day{padding:8px 6px;min-height:72px;border-right:1px solid rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.03);position:relative;transition:background .12s;cursor:default}
+.cal-day:hover{background:rgba(255,255,255,.015)}
+.cal-day.other-month{opacity:.3}
+.cal-day.today .day-num{background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.day-num{font-size:11px;font-weight:600;color:var(--t2);margin-bottom:4px;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.cal-event{font-size:9px;font-weight:500;padding:2px 5px;border-radius:3px;margin-bottom:2px;line-height:1.3;cursor:pointer;transition:opacity .1s}
+.cal-event:hover{opacity:.8}
+.cal-event.kr{background:rgba(99,102,241,.2);color:var(--blue)}
+.cal-event.us{background:rgba(6,182,212,.2);color:var(--cyan)}
+.cal-event.global{background:rgba(245,158,11,.15);color:var(--amber)}
+.cal-event.fomc{background:rgba(239,68,68,.15);color:var(--red)}
+.legend{padding:10px 20px;display:flex;gap:14px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.04)}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t3)}
+.leg-dot{width:8px;height:8px;border-radius:2px}
+
+/* 모바일 */
+.bnav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:999;background:rgba(15,17,23,.95);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.06);grid-template-columns:repeat(5,1fr);height:58px}
+.bni{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;opacity:.5}
+.bni.act,.bni:hover{opacity:1}
+.bni-icon{font-size:18px}
+.bni-label{font-size:9px;font-weight:500;color:var(--t2)}
+#kis-panel{display:none;position:fixed;top:0;right:0;width:320px;height:100vh;background:var(--s1);border-left:1px solid rgba(255,255,255,.06);z-index:999;padding:24px 20px;overflow-y:auto;box-shadow:-20px 0 60px rgba(0,0,0,.6)}
+.kp-close{font-size:12px;color:var(--blue);cursor:pointer;display:block;margin-bottom:20px}
+.kp-logo{font-size:18px;font-weight:700;margin-bottom:4px}
+.kp-sub{font-size:11px;color:var(--t3);margin-bottom:20px}
+.kp-lbl{font-size:10px;font-weight:600;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.kp-in{width:100%;padding:9px 12px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r8);font-family:var(--mono);font-size:12px;color:var(--t1);outline:none;margin-bottom:14px}
+.kp-save{width:100%;padding:10px;background:var(--blue);color:#fff;border:none;border-radius:var(--r8);font-size:13px;font-weight:600;cursor:pointer}
+@media(max-width:1100px){.main-grid{grid-template-columns:1fr}}
+@media(max-width:960px){.bnav{display:grid!important}body{padding-bottom:58px}.nav-links{display:none}}
+@media(max-width:600px){.page{padding:12px}.pmi-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo" onclick="go('index.html')">OHAKS<em>_</em>Desk</div>
+  <div class="nav-links">
+    <div class="nl" onclick="go('index.html')">홈</div>
+    <div class="nl act">매크로</div>
+    <div class="nl" onclick="go('research.html')">리서치</div>
+    <div class="nl" onclick="go('quant.html')">퀀트</div>
+  </div>
+  <div class="topbar-r">
+    <div class="chip"><div class="chip-dot" id="kr-dot"></div><span id="kr-st">KRX</span></div>
+    <div class="chip"><div class="chip-dot" id="us-dot"></div><span id="us-st">NYSE</span></div>
+    <div class="clk" id="clk">—</div>
+    <button class="kis-pill" onclick="toggleKis()">⚙ KIS API</button>
+  </div>
+</div>
+
+<div class="page">
+  <div class="main-grid">
+
+    <!-- ── 좌측 데이터 패널 ── -->
+    <div id="left-panel">
+
+      <!-- 미국 경제지표 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">🇺🇸 미국 경제지표</div>
+          <div class="card-ts" id="us-ind-ts">로딩 중...</div>
+        </div>
+        <div class="card-body" id="us-ind-body">
+          <div class="ind-row"><div><div class="ind-name">CPI YoY</div><div class="ind-sub">소비자물가 전년비</div></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div></div>
+          <div class="ind-row"><div><div class="ind-name">Core CPI YoY</div><div class="ind-sub">근원 소비자물가</div></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div></div>
+          <div class="ind-row"><div><div class="ind-name">PCE YoY</div><div class="ind-sub">개인소비지출 물가</div></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div></div>
+          <div class="ind-row"><div><div class="ind-name">NFP</div><div class="ind-sub">비농업 신규고용 (천명)</div></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div></div>
+          <div class="ind-row"><div><div class="ind-name">실업률</div><div class="ind-sub">Unemployment Rate</div></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div></div>
+          <div class="ind-row"><div><div class="ind-name">GDP QoQ</div><div class="ind-sub">실질 GDP 성장률</div></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div></div>
+          <div class="ind-row"><div><div class="ind-name">소매판매 MoM</div><div class="ind-sub">Retail Sales</div></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div></div>
+        </div>
+      </div>
+
+      <!-- 연준 동향 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">🏛 연준 동향</div>
+          <div class="card-ts">실시간 데이터 미지원 · 수동 업데이트</div>
+        </div>
+        <div class="card-body">
+          <!-- 현재 금리 -->
+          <div class="ind-row">
+            <div><div class="ind-name">기준금리 (FFR)</div><div class="ind-sub">Federal Funds Rate</div></div>
+            <div></div>
+            <div class="ind-prev" style="color:var(--t3)">이전</div>
+            <div class="ind-val" id="ffr-val">4.25~4.50%</div>
+          </div>
+          <!-- FOMC 일정 -->
+          <div class="fomc-row">
+            <div><div class="fomc-date">2025.01.29</div><div class="fomc-label">FOMC — 동결 (4.25~4.50%)</div></div>
+            <div class="fomc-tag done">완료</div>
+          </div>
+          <div class="fomc-row">
+            <div><div class="fomc-date">2025.03.19</div><div class="fomc-label">FOMC + 점도표 (SEP)</div></div>
+            <div class="fomc-tag done">완료</div>
+          </div>
+          <div class="fomc-row" style="background:rgba(245,158,11,.04)">
+            <div><div class="fomc-date">2025.05.07</div><div class="fomc-label">FOMC — 다음 회의</div></div>
+            <div class="fomc-tag next">D-<span id="fomc-d"></span></div>
+          </div>
+          <div class="fomc-row">
+            <div><div class="fomc-date">2025.06.18</div><div class="fomc-label">FOMC + 점도표 (SEP)</div></div>
+            <div class="fomc-tag">예정</div>
+          </div>
+          <div class="fomc-row">
+            <div><div class="fomc-date">2025.07.30</div><div class="fomc-label">FOMC</div></div>
+            <div class="fomc-tag">예정</div>
+          </div>
+
+          <!-- Fed Watch 확률 -->
+          <div style="padding:10px 16px 0;border-top:1px solid rgba(255,255,255,.04);margin-top:4px">
+            <div style="font-size:9.5px;font-weight:700;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-bottom:8px">May FOMC 금리 확률 (CME FedWatch 참고)</div>
+          </div>
+          <div class="fw-row">
+            <div class="fw-top"><span class="fw-label">동결 (4.25~4.50%)</span><span class="fw-prob high" id="fw-hold">86%</span></div>
+            <div class="fw-bar"><div class="fw-fill hold" style="width:86%"></div></div>
+          </div>
+          <div class="fw-row">
+            <div class="fw-top"><span class="fw-label">25bp 인하 (4.00~4.25%)</span><span class="fw-prob mid" id="fw-cut25">12%</span></div>
+            <div class="fw-bar"><div class="fw-fill cut" style="width:12%"></div></div>
+          </div>
+          <div class="fw-row">
+            <div class="fw-top"><span class="fw-label">50bp 인하</span><span class="fw-prob low" id="fw-cut50">2%</span></div>
+            <div class="fw-bar"><div class="fw-fill cut" style="width:2%;background:var(--cyan)"></div></div>
+          </div>
+          <div style="padding:6px 16px 10px;font-size:9px;color:var(--t3)">※ CME FedWatch 수동 참조 — <a href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html" target="_blank" style="color:var(--blue);text-decoration:none">업데이트 →</a></div>
+        </div>
+      </div>
+
+      <!-- 한국 경제지표 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">🇰🇷 한국 경제지표</div>
+          <div class="card-ts" id="kr-ind-ts">로딩 중...</div>
+        </div>
+        <div class="card-body" id="kr-ind-body">
+          <div class="ind-row"><div><div class="ind-name">기준금리</div><div class="ind-sub">한국은행 기준금리</div></div><div></div><div class="ind-prev"></div><div class="ind-val">2.75%</div></div>
+          <div class="ind-row"><div><div class="ind-name">CPI YoY</div><div class="ind-sub">소비자물가 전년비</div></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div></div>
+          <div class="ind-row"><div><div class="ind-name">PPI YoY</div><div class="ind-sub">생산자물가 전년비</div></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div></div>
+          <div class="ind-row"><div><div class="ind-name">수출 YoY</div><div class="ind-sub">전년 동월비</div></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div></div>
+          <div class="ind-row"><div><div class="ind-name">무역수지</div><div class="ind-sub">Trade Balance (억$)</div></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div></div>
+          <div class="ind-row"><div><div class="ind-name">GDP QoQ</div><div class="ind-sub">실질 GDP 성장률</div></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div><div class="ind-skeleton"></div></div>
+        </div>
+      </div>
+
+      <!-- 글로벌 PMI / ISM -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">🌐 글로벌 PMI / ISM</div>
+          <div class="card-ts" id="pmi-ts">로딩 중...</div>
+        </div>
+        <div class="pmi-grid" id="pmi-grid">
+          <!-- JS로 채움 -->
+        </div>
+        <div style="padding:8px 14px;font-size:9px;color:var(--t3);border-top:1px solid rgba(255,255,255,.04)">50 이상 = 확장 · 50 미만 = 위축 · 출처: Markit/S&amp;P Global, ISM</div>
+      </div>
+
+    </div>
+
+    <!-- ── 우측 AI 코멘트 ── -->
+    <div>
+      <div class="ai-card">
+        <div class="ai-head">
+          <div>
+            <div class="ai-title">AI 매크로 코멘트</div>
+            <div class="ai-meta" id="ai-meta">데이터 로드 후 자동 생성</div>
+          </div>
+          <div class="ai-actions">
+            <button class="ai-btn" onclick="copyAI()">복사</button>
+            <button class="ai-btn regen" id="regen-btn" onclick="genAI()" disabled>재생성</button>
+          </div>
+        </div>
+        <div class="ai-body" id="ai-body">
+          <div class="ai-placeholder">
+            <div class="ai-ph-icon">📡</div>
+            <div class="ai-ph-text">경제지표 데이터를 수집 중입니다...<br>완료 후 자동으로 매크로 분석을 생성합니다.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── 이벤트 캘린더 ── -->
+  <div class="cal-section">
+    <div class="cal-card">
+      <div class="cal-head">
+        <div class="cal-title">📅 이벤트 캘린더</div>
+        <div class="cal-filter">
+          <div class="cf-btn act" onclick="filterCal('all',this)">전체</div>
+          <div class="cf-btn" onclick="filterCal('fomc',this)" style="color:var(--red)">FOMC</div>
+          <div class="cf-btn" onclick="filterCal('us',this)" style="color:var(--cyan)">미국</div>
+          <div class="cf-btn" onclick="filterCal('kr',this)" style="color:var(--blue)">한국</div>
+          <div class="cf-btn" onclick="filterCal('global',this)" style="color:var(--amber)">글로벌</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid rgba(255,255,255,.04)">
+        <button onclick="prevMonth()" style="background:var(--s2);border:1px solid var(--b1);color:var(--t2);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px">◀</button>
+        <div id="cal-month-label" style="font-size:13px;font-weight:600;color:var(--t1)"></div>
+        <button onclick="nextMonth()" style="background:var(--s2);border:1px solid var(--b1);color:var(--t2);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px">▶</button>
+      </div>
+      <div class="cal-grid" id="cal-dow-row"></div>
+      <div class="cal-grid" id="cal-body" style="grid-template-columns:repeat(7,1fr)"></div>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(239,68,68,.5)"></div>FOMC</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(6,182,212,.5)"></div>미국 지표</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(99,102,241,.5)"></div>한국 지표</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(245,158,11,.5)"></div>글로벌</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 모바일 네비 -->
+<div class="bnav">
+  <div class="bni" onclick="go('index.html')"><div class="bni-icon">🏠</div><div class="bni-label">홈</div></div>
+  <div class="bni act"><div class="bni-icon">🌐</div><div class="bni-label">매크로</div></div>
+  <div class="bni" onclick="go('research.html')"><div class="bni-icon">🔍</div><div class="bni-label">리서치</div></div>
+  <div class="bni" onclick="go('quant.html')"><div class="bni-icon">⚡</div><div class="bni-label">퀀트</div></div>
+</div>
+
+<!-- KIS 패널 -->
+<div id="kis-panel">
+  <span class="kp-close" onclick="toggleKis()">← 닫기</span>
+
+  <!-- Anthropic -->
+  <div class="kp-logo">🤖 Anthropic API</div>
+  <div class="kp-sub">AI 매크로 코멘트 / 리서치 분석</div>
+  <div class="kp-lbl">API Key</div>
+  <input class="kp-in" id="ant-key" type="password" placeholder="sk-ant-..." spellcheck="false">
+  <button class="kp-save" onclick="saveAnt()" style="margin-bottom:6px">저장</button>
+  <div id="ant-st" style="font-size:11px;margin-top:4px;color:var(--t3);margin-bottom:20px"></div>
+
+  <div style="border-top:1px solid rgba(255,255,255,.06);margin-bottom:20px"></div>
+
+  <!-- KIS -->
+  <div class="kp-logo">📈 KIS API</div>
+  <div class="kp-sub">한국투자증권 OpenAPI</div>
+  <div class="kp-lbl">App Key</div><input class="kp-in" id="kp-key" type="text" placeholder="App Key" spellcheck="false">
+  <div class="kp-lbl">App Secret</div><input class="kp-in" id="kp-sec" type="password" placeholder="App Secret">
+  <div class="kp-lbl">계좌번호 앞 8자리</div><input class="kp-in" id="kp-acc" type="text" placeholder="12345678" maxlength="8">
+  <button class="kp-save" onclick="saveKis()">저장</button>
+  <div id="kp-st" style="font-size:11px;margin-top:10px;color:var(--t3)"></div>
+</div>
+
+<script>
+const go = u => location.href = u;
+
+// ── 시계 ──────────────────────────────────────────────
+function tick(){
+  const now=new Date(),kst=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Seoul'})),et=new Date(now.toLocaleString('en-US',{timeZone:'America/New_York'}));
+  const p=n=>String(n).padStart(2,'0');
+  document.getElementById('clk').textContent=`${p(kst.getHours())}:${p(kst.getMinutes())}:${p(kst.getSeconds())}`;
+  const kH=kst.getHours()*60+kst.getMinutes(),kD=kst.getDay(),kO=kD>=1&&kD<=5&&kH>=540&&kH<930;
+  document.getElementById('kr-dot').className='chip-dot '+(kO?'open':'closed');
+  document.getElementById('kr-st').textContent='KRX '+(kO?'OPEN':'CLOSED');
+  const uH=et.getHours()*60+et.getMinutes(),uD=et.getDay(),uO=uD>=1&&uD<=5&&uH>=570&&uH<960;
+  document.getElementById('us-dot').className='chip-dot '+(uO?'open':'closed');
+  document.getElementById('us-st').textContent='NYSE '+(uO?'OPEN':'CLOSED');
+  setTimeout(tick,1000);
+}
+tick();
+
+// FOMC D-day
+const nextFOMC = new Date('2025-05-07');
+const diff = Math.ceil((nextFOMC - new Date()) / 86400000);
+document.getElementById('fomc-d').textContent = diff > 0 ? diff : '오늘';
+
+// ── Yahoo Finance fetch ────────────────────────────────
+async function fetchY(sym) {
+  try {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=5d`;
+    const r = await fetch(url);
+    const d = await r.json();
+    const meta = d.chart.result[0].meta;
+    const cur = meta.regularMarketPrice;
+    const prev = meta.regularMarketPreviousClose;
+    const chg = cur - prev;
+    const chgPct = (chg / prev) * 100;
+    return { cur, prev, chg, chgPct };
+  } catch(e) { return null; }
+}
+
+// ── 경제지표 데이터 (하드코딩 + 최신 수동 업데이트) ──────
+// 실시간 API 없음 → 가장 최근 발표치 하드코딩
+const US_IND = [
+  { name:'CPI YoY',     sub:'소비자물가 전년비',     val:'2.8%',   prev:'3.0%',   date:'2025.03',  dir:-1 },
+  { name:'Core CPI YoY',sub:'근원 소비자물가',       val:'3.1%',   prev:'3.3%',   date:'2025.03',  dir:-1 },
+  { name:'PCE YoY',     sub:'개인소비지출 물가',     val:'2.5%',   prev:'2.6%',   date:'2025.02',  dir:-1 },
+  { name:'NFP',         sub:'비농업 신규고용 (천명)', val:'+151K',  prev:'+125K',  date:'2025.02',  dir:1 },
+  { name:'실업률',       sub:'Unemployment Rate',    val:'4.1%',   prev:'4.0%',   date:'2025.02',  dir:1 },
+  { name:'GDP QoQ',     sub:'실질 GDP 성장률 (속보)', val:'2.3%',   prev:'3.1%',   date:'Q4 2024',  dir:-1 },
+  { name:'소매판매 MoM', sub:'Retail Sales',         val:'-0.9%',  prev:'+0.7%',  date:'2025.02',  dir:-1 },
+];
+
+const KR_IND = [
+  { name:'기준금리',  sub:'한국은행 기준금리',     val:'2.75%',  prev:'3.00%',  date:'2025.02',  dir:-1 },
+  { name:'CPI YoY',  sub:'소비자물가 전년비',     val:'2.0%',   prev:'1.6%',   date:'2025.02',  dir:1 },
+  { name:'PPI YoY',  sub:'생산자물가 전년비',     val:'-0.3%',  prev:'-0.5%',  date:'2025.01',  dir:1 },
+  { name:'수출 YoY', sub:'전년 동월비',           val:'+1.0%',  prev:'-0.2%',  date:'2025.02',  dir:1 },
+  { name:'무역수지', sub:'Trade Balance (억$)',   val:'+18.6',  prev:'+42.3',  date:'2025.02',  dir:-1 },
+  { name:'GDP QoQ',  sub:'실질 GDP 성장률',       val:'+0.1%',  prev:'+0.1%',  date:'Q4 2024',  dir:0 },
+];
+
+const PMI_DATA = [
+  { country:'미국', type:'ISM 제조업', val:49.0, prev:50.3 },
+  { country:'미국', type:'ISM 서비스업', val:53.5, prev:52.8 },
+  { country:'유로존', type:'PMI 제조업', val:47.6, prev:47.3 },
+  { country:'유로존', type:'PMI 서비스업', val:50.4, prev:51.0 },
+  { country:'중국', type:'PMI 제조업 (Caixin)', val:51.1, prev:50.8 },
+  { country:'중국', type:'PMI 서비스업 (Caixin)', val:51.4, prev:52.3 },
+  { country:'일본', type:'PMI 제조업', val:48.4, prev:49.0 },
+  { country:'한국', type:'PMI 제조업', val:49.4, prev:50.3 },
+];
+
+function renderIndRow(item) {
+  const delta = parseFloat(item.val) - parseFloat(item.prev);
+  const cls = item.dir > 0 ? 'up' : item.dir < 0 ? 'dn' : 'flat';
+  const arrow = item.dir > 0 ? '▲' : item.dir < 0 ? '▼' : '─';
+  return `<div class="ind-row">
+    <div><div class="ind-name">${item.name}</div><div class="ind-sub">${item.sub}</div></div>
+    <div class="ind-prev" style="color:var(--t3);font-size:9px">${item.date}</div>
+    <div class="ind-prev">이전 ${item.prev}</div>
+    <div class="ind-val" style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+      <span>${item.val}</span>
+      <span class="ind-delta ${cls}">${arrow}</span>
+    </div>
+  </div>`;
+}
+
+function renderPMI() {
+  document.getElementById('pmi-grid').innerHTML = PMI_DATA.map(p => {
+    const exp = p.val >= 50;
+    const cls = p.val >= 52 ? 'exp' : p.val >= 50 ? 'neu' : 'con';
+    return `<div class="pmi-cell">
+      <div class="pmi-country">${p.country}</div>
+      <div class="pmi-type">${p.type}</div>
+      <div class="pmi-val ${cls}">${p.val}</div>
+      <div class="pmi-prev">이전 ${p.prev}</div>
+    </div>`;
+  }).join('');
+}
+
+function loadData() {
+  // US 지표 렌더링
+  document.getElementById('us-ind-body').innerHTML = US_IND.map(renderIndRow).join('');
+  document.getElementById('us-ind-ts').textContent = '최신 발표치 기준';
+  // KR 지표
+  document.getElementById('kr-ind-body').innerHTML = KR_IND.map(renderIndRow).join('');
+  document.getElementById('kr-ind-ts').textContent = '최신 발표치 기준';
+  // PMI
+  renderPMI();
+  document.getElementById('pmi-ts').textContent = '2025년 3월 기준';
+  // AI 자동 생성
+  genAI();
+}
+
+// ── AI 매크로 코멘트 ───────────────────────────────────
+let aiResult = '';
+
+function buildMacroPrompt() {
+  const usData = US_IND.map(i=>`${i.name}: ${i.val} (이전 ${i.prev})`).join(', ');
+  const krData = KR_IND.map(i=>`${i.name}: ${i.val} (이전 ${i.prev})`).join(', ');
+  const pmiData = PMI_DATA.map(p=>`${p.country} ${p.type}: ${p.val}`).join(', ');
+
+  return `당신은 15년 경력의 헤지펀드 매니저이자 CFA 자격 보유자입니다. 아래 최신 매크로 데이터를 기반으로 현재 글로벌 매크로 환경을 분석하라.
+
+기준일: ${new Date().toISOString().slice(0,10)}
+연준 기준금리: 4.25~4.50% (동결 중)
+한국 기준금리: 2.75%
+
+[미국 경제지표]
+${usData}
+
+[한국 경제지표]
+${krData}
+
+[글로벌 PMI / ISM]
+${pmiData}
+
+분석 요구사항:
+1) 현재 매크로 레짐 한 줄 정의 (예: "Soft Landing 진행 중, 디스인플레이션 둔화")
+2) 핵심 데이터 해석 — 각 데이터의 의미와 상호 연결성 (3~5개 포인트)
+3) 연준 정책 경로 전망 — 현재 데이터가 시사하는 금리 경로와 리스크
+4) 한국 경제 포지션 — 글로벌 사이클 대비 한국의 상대적 위치
+5) 자산 시장 함의 — 주식/채권/외환/원자재 각각 간략히 (1~2문장씩)
+6) 핵심 모니터링 지표 3개 — 다음 달 가장 중요하게 봐야 할 데이터
+
+출력: 마크다운. ## 섹션 헤더 사용. 간결하고 액션어블하게. 학술적 장황함 금지.`;
+}
+
+async function genAI() {
+  const apiKey = localStorage.getItem('ant_key');
+  if (!apiKey) {
+    document.getElementById('ai-body').innerHTML = `<div class="error-bar">⚙️ API 키가 없습니다. 우상단 <strong>⚙ KIS API</strong> 버튼 → Anthropic API Key를 먼저 저장하세요.</div>`;
+    document.getElementById('ai-meta').textContent = 'API 키 미설정';
+    document.getElementById('regen-btn').disabled = false;
+    return;
+  }
+  const btn = document.getElementById('regen-btn');
+  btn.disabled = true;
+  aiResult = '';
+
+  document.getElementById('ai-body').innerHTML = `<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span style="font-size:12px;color:var(--t3);margin-left:8px">매크로 분석 생성 중...</span>`;
+  document.getElementById('ai-meta').textContent = `생성 중... · ${new Date().toLocaleTimeString('ko-KR')}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        stream: true,
+        messages: [{role:'user', content: buildMacroPrompt()}],
+        system: 'You are a macro strategist. Respond in Korean. Be concise and actionable. Use markdown.'
+      })
+    });
+    if (!resp.ok) { const e = await resp.json(); throw new Error(e.error?.message||resp.statusText); }
+
+    const reader = resp.body.getReader(), dec = new TextDecoder();
+    document.getElementById('ai-body').innerHTML = '<div id="ai-stream"></div>';
+
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      for (const line of dec.decode(value).split('\n')) {
+        if (!line.startsWith('data:')) continue;
+        const d = line.slice(5).trim();
+        if (d === '[DONE]') continue;
+        try {
+          const j = JSON.parse(d);
+          if (j.type === 'content_block_delta' && j.delta?.text) {
+            aiResult += j.delta.text;
+            const el = document.getElementById('ai-stream');
+            if (el) el.innerHTML = mdToHtml(aiResult) + '<span class="cursor"></span>';
+          }
+        } catch(_) {}
+      }
+    }
+    const el = document.getElementById('ai-stream');
+    if (el) el.innerHTML = mdToHtml(aiResult);
+    document.getElementById('ai-meta').textContent = `생성 완료 · ${new Date().toLocaleTimeString('ko-KR')}`;
+  } catch(err) {
+    document.getElementById('ai-body').innerHTML = `<div class="error-bar">⚠️ ${err.message}</div>`;
+  }
+  btn.disabled = false;
+}
+
+function copyAI() {
+  if (!aiResult) return;
+  navigator.clipboard.writeText(aiResult);
+  const btn = document.querySelector('.ai-btn:not(.regen)');
+  btn.textContent = '✓ 복사됨';
+  setTimeout(() => btn.textContent = '복사', 2000);
+}
+
+function mdToHtml(md) {
+  return md
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+    .replace(/^\|(.+)\|$/gm, m => {
+      const cells = m.split('|').filter((_,i,a)=>i>0&&i<a.length-1);
+      return '<tr>'+cells.map(c=>`<td>${c.trim()}</td>`).join('')+'</tr>';
+    })
+    .replace(/(<tr>[\s\S]*?<\/tr>\n?)+/g, t => '<table>'+t+'</table>')
+    .replace(/^[-*] (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g, m => '<ul>'+m+'</ul>')
+    .replace(/\[Bull\]/gi,'<span class="tag-bull">Bull</span>')
+    .replace(/\[Bear\]/gi,'<span class="tag-bear">Bear</span>')
+    .split('\n\n').map(p => p.startsWith('<') ? p : `<p>${p}</p>`).join('');
+}
+
+// ── 이벤트 캘린더 ──────────────────────────────────────
+const EVENTS = [
+  // 2025년 3월
+  { date:'2025-03-19', label:'FOMC + SEP 점도표', type:'fomc' },
+  { date:'2025-03-12', label:'미국 CPI (2월)', type:'us' },
+  { date:'2025-03-14', label:'미국 PPI (2월)', type:'us' },
+  { date:'2025-03-28', label:'미국 PCE (2월)', type:'us' },
+  { date:'2025-03-07', label:'미국 NFP (2월)', type:'us' },
+  { date:'2025-03-04', label:'한국 CPI (2월)', type:'kr' },
+  { date:'2025-03-20', label:'BOJ 정책회의', type:'global' },
+  // 2025년 4월
+  { date:'2025-04-10', label:'미국 CPI (3월)', type:'us' },
+  { date:'2025-04-11', label:'미국 PPI (3월)', type:'us' },
+  { date:'2025-04-04', label:'미국 NFP (3월)', type:'us' },
+  { date:'2025-04-30', label:'미국 PCE (3월)', type:'us' },
+  { date:'2025-04-30', label:'미국 GDP 1Q 속보', type:'us' },
+  { date:'2025-04-01', label:'한국 CPI (3월)', type:'kr' },
+  { date:'2025-04-17', label:'한국 BOK 기준금리', type:'kr' },
+  { date:'2025-04-24', label:'ECB 정책회의', type:'global' },
+  // 2025년 5월
+  { date:'2025-05-07', label:'FOMC', type:'fomc' },
+  { date:'2025-05-13', label:'미국 CPI (4월)', type:'us' },
+  { date:'2025-05-02', label:'미국 NFP (4월)', type:'us' },
+  { date:'2025-05-01', label:'한국 CPI (4월)', type:'kr' },
+  { date:'2025-05-29', label:'미국 PCE (4월)', type:'us' },
+  { date:'2025-05-22', label:'BOJ 의사록', type:'global' },
+  // 2025년 6월
+  { date:'2025-06-18', label:'FOMC + SEP 점도표', type:'fomc' },
+  { date:'2025-06-12', label:'미국 CPI (5월)', type:'us' },
+  { date:'2025-06-06', label:'미국 NFP (5월)', type:'us' },
+  { date:'2025-06-05', label:'한국 BOK 기준금리', type:'kr' },
+  { date:'2025-06-05', label:'ECB 정책회의', type:'global' },
+];
+
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let calFilter = 'all';
+
+function filterCal(f, el) {
+  calFilter = f;
+  document.querySelectorAll('.cf-btn').forEach(b => b.classList.remove('act'));
+  el.classList.add('act');
+  renderCal();
+}
+
+function prevMonth() { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCal(); }
+function nextMonth() { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCal(); }
+
+function renderCal() {
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  document.getElementById('cal-dow-row').innerHTML = DAYS.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+
+  const today = new Date();
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+
+  const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('cal-month-label').textContent = `${calYear}년 ${monthNames[calMonth]}`;
+
+  const cells = [];
+  // 이전달
+  for (let i = firstDay - 1; i >= 0; i--) cells.push({ day: daysInPrev - i, cur: false });
+  // 이번달
+  for (let i = 1; i <= daysInMonth; i++) cells.push({ day: i, cur: true });
+  // 다음달
+  let next = 1;
+  while (cells.length % 7 !== 0) cells.push({ day: next++, cur: false });
+
+  const filteredEvents = EVENTS.filter(e => calFilter === 'all' || e.type === calFilter);
+
+  document.getElementById('cal-body').innerHTML = cells.map(cell => {
+    const isToday = cell.cur && cell.day === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(cell.day).padStart(2,'0')}`;
+    const dayEvents = cell.cur ? filteredEvents.filter(e => e.date === dateStr) : [];
+    const evHtml = dayEvents.map(e => `<div class="cal-event ${e.type}" title="${e.label}">${e.label}</div>`).join('');
+    return `<div class="cal-day${!cell.cur?' other-month':''}${isToday?' today':''}">
+      <div class="day-num">${cell.day}</div>
+      ${evHtml}
+    </div>`;
+  }).join('');
+}
+
+// KIS
+function toggleKis(){
+  const p=document.getElementById('kis-panel');
+  p.style.display=(p.style.display==='none'||!p.style.display)?'block':'none';
+  if(p.style.display==='block'){
+    const ak=localStorage.getItem('ant_key')||'';
+    document.getElementById('ant-key').value=ak?'••••••••••••••••':'';
+    document.getElementById('ant-st').textContent=ak?'✓ 저장됨':'미입력';
+    document.getElementById('kp-key').value=localStorage.getItem('kis_appkey')||'';
+    document.getElementById('kp-sec').value=localStorage.getItem('kis_appsecret')||'';
+    document.getElementById('kp-acc').value=localStorage.getItem('kis_accno')||'';
+  }
+}
+function saveAnt(){
+  const k=document.getElementById('ant-key').value.trim();
+  if(!k||k.startsWith('•'))return;
+  localStorage.setItem('ant_key',k);
+  document.getElementById('ant-st').textContent='✓ 저장됨';
+  document.getElementById('ant-key').value='••••••••••••••••';
+}
+function saveKis(){
+  const k=document.getElementById('kp-key').value.trim(),s=document.getElementById('kp-sec').value.trim(),a=document.getElementById('kp-acc').value.trim();
+  if(!k||!s)return;
+  localStorage.setItem('kis_appkey',k);localStorage.setItem('kis_appsecret',s);if(a)localStorage.setItem('kis_accno',a);
+  document.getElementById('kp-st').textContent='✓ 저장됨';
+}
+
+// 초기화
+renderCal();
+loadData();  // 데이터 렌더 → AI 자동 생성 트리거
+</script>
+</body>
+</html>

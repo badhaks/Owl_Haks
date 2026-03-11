@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OHAKS_Desk · 리서치</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090C;--s1:#0F1117;--s2:#161820;--s3:#1E2028;
+  --b1:#2E3240;--b2:#3D4255;
+  --t1:#F0F2FF;--t2:#A0A8C0;--t3:#606880;
+  --green:#22C55E;--red:#EF4444;--blue:#6366F1;
+  --amber:#F59E0B;--cyan:#06B6D4;--purple:#A855F7;
+  --green-bg:rgba(34,197,94,.08);--green-border:rgba(34,197,94,.25);
+  --red-bg:rgba(239,68,68,.08);--red-border:rgba(239,68,68,.25);
+  --blue-bg:rgba(99,102,241,.12);--blue-border:rgba(99,102,241,.3);
+  --ui:"Inter",sans-serif;--mono:"DM Mono",monospace;
+  --r8:8px;--r12:12px;--r16:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t1);font-family:var(--ui);font-size:13px;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:100;height:52px;display:flex;align-items:center;padding:0 20px;gap:16px;background:rgba(8,9,12,.85);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.05)}
+.logo{font-size:14px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;background:linear-gradient(135deg,#fff 60%,rgba(255,255,255,.4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;cursor:pointer}
+.logo em{font-style:normal;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:2px}
+.nl{font-size:12px;font-weight:500;color:var(--t3);padding:5px 10px;border-radius:6px;cursor:pointer;transition:all .15s}
+.nl:hover{color:var(--t2);background:var(--s2)}
+.nl.act{background:var(--s3);color:var(--t1)}
+.topbar-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.chip{display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--s2);border:1px solid rgba(255,255,255,.06);border-radius:20px;font-size:10.5px;font-weight:500;color:var(--t2)}
+.chip-dot{width:6px;height:6px;border-radius:50%}
+.chip-dot.open{background:var(--green);box-shadow:0 0 6px var(--green)}
+.chip-dot.closed{background:var(--t3)}
+.clk{font-family:var(--mono);font-size:11px;color:var(--t3);min-width:64px;text-align:right}
+.kis-pill{font-size:10.5px;font-weight:500;padding:5px 11px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--t3);cursor:pointer;transition:all .15s}
+.kis-pill:hover,.kis-pill.active{border-color:var(--blue-border);color:var(--blue)}
+.page{max-width:1400px;margin:0 auto;padding:20px 20px 40px;display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start}
+.left-panel{display:flex;flex-direction:column;gap:10px;position:sticky;top:68px}
+.card{background:var(--s1);border:1px solid rgba(255,255,255,.05);border-radius:var(--r16);padding:18px}
+.card-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:14px}
+.mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:14px}
+.mtab{padding:9px 6px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r8);cursor:pointer;text-align:center;transition:all .15s}
+.mtab:hover{border-color:var(--b2)}
+.mtab.act{background:var(--blue-bg);border-color:var(--blue-border)}
+.mtab-icon{font-size:16px;margin-bottom:3px}
+.mtab-label{font-size:10.5px;font-weight:600;color:var(--t2)}
+.mtab.act .mtab-label{color:var(--blue)}
+.mtab-desc{font-size:9px;color:var(--t3);margin-top:2px;line-height:1.3}
+.field{margin-bottom:10px}
+.field:last-child{margin-bottom:0}
+.field-label{font-size:10px;font-weight:600;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+.fi{width:100%;padding:9px 12px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r8);font-family:var(--ui);font-size:13px;color:var(--t1);outline:none;transition:border-color .15s;resize:none}
+.fi:focus{border-color:var(--blue)}
+.fi::placeholder{color:var(--t3)}
+.adv-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--t3);font-size:11px;margin:10px 0 6px;user-select:none;padding:4px 0}
+.adv-toggle:hover{color:var(--t2)}
+.adv-arrow{font-size:9px;transition:transform .2s;display:inline-block}
+.adv-body{display:none;margin-bottom:8px}
+.upload-area{border:1.5px dashed var(--b1);border-radius:var(--r8);padding:12px;text-align:center;cursor:pointer;transition:all .15s;background:var(--s2)}
+.upload-area:hover{border-color:var(--blue)}
+.upload-area.has-file{border-color:var(--green-border);background:var(--green-bg)}
+.upload-text{font-size:11px;color:var(--t3);line-height:1.5}
+.upload-text strong{color:var(--t2)}
+#pdf-input{display:none}
+.gen-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--blue),var(--purple));border:none;border-radius:var(--r12);font-family:var(--ui);font-size:13px;font-weight:600;color:#fff;cursor:pointer;transition:all .2s;margin-top:4px}
+.gen-btn:hover{opacity:.9;transform:translateY(-1px)}
+.gen-btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.bk-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.bk-count{font-size:10px;font-family:var(--mono);color:var(--blue)}
+.bk-list{max-height:300px;overflow-y:auto}
+.bk-item{padding:10px 12px;border-radius:var(--r8);cursor:pointer;transition:background .15s;display:flex;align-items:flex-start;gap:9px}
+.bk-item:hover{background:var(--s2)}
+.bk-item.act{background:var(--blue-bg);outline:1px solid var(--blue-border)}
+.bk-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.bk-dot.analysis{background:var(--blue)}
+.bk-dot.compounder{background:var(--green)}
+.bk-dot.framework{background:var(--amber)}
+.bk-dot.memo{background:var(--purple)}
+.bk-sym{font-size:12px;font-weight:600;color:var(--t1)}
+.bk-mode{font-size:9.5px;color:var(--t3);margin-top:1px}
+.bk-date{font-size:9px;font-family:var(--mono);color:var(--t3);white-space:nowrap}
+.bk-del{font-size:11px;color:var(--t3);opacity:0;padding:1px 5px;border-radius:3px}
+.bk-del:hover{color:var(--red)}
+.bk-item:hover .bk-del{opacity:1}
+.bk-empty{padding:16px;text-align:center;color:var(--t3);font-size:11px}
+.right-panel{display:flex;flex-direction:column;gap:12px}
+.output-card{background:var(--s1);border:1px solid rgba(255,255,255,.05);border-radius:var(--r16);overflow:hidden;min-height:520px}
+.oc-head{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.oc-title{font-size:14px;font-weight:600;color:var(--t1)}
+.oc-meta{font-size:10px;color:var(--t3);font-family:var(--mono);margin-top:2px}
+.oc-actions{display:flex;gap:6px;flex-shrink:0}
+.oc-btn{font-size:11px;font-weight:500;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid var(--b1);background:var(--s2);color:var(--t2);transition:all .15s}
+.oc-btn:hover{border-color:var(--b2);color:var(--t1)}
+.oc-btn.save{border-color:var(--blue-border);background:var(--blue-bg);color:var(--blue)}
+.oc-btn.save:hover{background:var(--blue);color:#fff}
+.oc-body{padding:24px 28px;line-height:1.8;color:var(--t2);font-size:13px}
+.oc-placeholder{padding:80px 24px;text-align:center}
+.oc-ph-icon{font-size:44px;margin-bottom:16px;opacity:.25}
+.oc-ph-title{font-size:16px;font-weight:600;color:var(--t1);margin-bottom:8px;opacity:.4}
+.oc-ph-desc{font-size:12px;color:var(--t3);line-height:1.7;max-width:300px;margin:0 auto}
+.oc-body h1{font-size:18px;font-weight:700;color:var(--t1);border-bottom:1px solid rgba(255,255,255,.07);padding-bottom:10px;margin:24px 0 14px}
+.oc-body h2{font-size:14px;font-weight:600;color:var(--blue);margin:20px 0 10px}
+.oc-body h3{font-size:13px;font-weight:600;color:var(--cyan);margin:16px 0 8px}
+.oc-body p{margin-bottom:12px}
+.oc-body ul,.oc-body ol{padding-left:20px;margin-bottom:12px}
+.oc-body li{margin-bottom:5px}
+.oc-body strong{color:var(--t1);font-weight:600}
+.oc-body em{color:var(--amber);font-style:normal}
+.oc-body code{font-family:var(--mono);font-size:11.5px;background:var(--s3);padding:2px 7px;border-radius:4px;color:var(--cyan)}
+.oc-body blockquote{border-left:3px solid var(--blue);padding:10px 16px;background:var(--s2);border-radius:0 var(--r8) var(--r8) 0;margin:14px 0;color:var(--t2);font-size:12.5px}
+.oc-body table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+.oc-body th{padding:9px 12px;background:var(--s3);color:var(--t3);font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-align:left;border-bottom:1px solid var(--b1)}
+.oc-body td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--t2)}
+.oc-body tr:hover td{background:rgba(255,255,255,.015)}
+.tag-bull{display:inline-block;padding:2px 8px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);border-radius:4px;font-size:10px;font-weight:700;margin:0 2px}
+.tag-bear{display:inline-block;padding:2px 8px;background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);border-radius:4px;font-size:10px;font-weight:700;margin:0 2px}
+.cursor{display:inline-block;width:2px;height:14px;background:var(--blue);animation:blink .7s infinite;vertical-align:middle;margin-left:2px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.error-bar{padding:12px 16px;background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--r8);color:var(--red);font-size:12px;margin:16px 24px}
+.bnav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:999;background:rgba(15,17,23,.95);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.06);grid-template-columns:repeat(5,1fr);height:58px}
+.bni{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;opacity:.5}
+.bni.act{opacity:1}
+.bni-icon{font-size:18px}
+.bni-label{font-size:9px;font-weight:500;color:var(--t2)}
+#kis-panel{display:none;position:fixed;top:0;right:0;width:320px;height:100vh;background:var(--s1);border-left:1px solid rgba(255,255,255,.06);z-index:999;padding:24px 20px;overflow-y:auto;box-shadow:-20px 0 60px rgba(0,0,0,.6)}
+.kp-close{font-size:12px;color:var(--blue);cursor:pointer;display:block;margin-bottom:20px}
+.kp-logo{font-size:18px;font-weight:700;margin-bottom:4px}
+.kp-sub{font-size:11px;color:var(--t3);margin-bottom:20px}
+.kp-lbl{font-size:10px;font-weight:600;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.kp-in{width:100%;padding:9px 12px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r8);font-family:var(--mono);font-size:12px;color:var(--t1);outline:none;margin-bottom:14px}
+.kp-save{width:100%;padding:10px;background:var(--blue);color:#fff;border:none;border-radius:var(--r8);font-size:13px;font-weight:600;cursor:pointer}
+@media(max-width:960px){.bnav{display:grid!important}body{padding-bottom:58px}.nav-links{display:none}.page{grid-template-columns:1fr}.left-panel{position:static}}
+@media(max-width:600px){.page{padding:12px}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo" onclick="go('index.html')">OHAKS<em>_</em>Desk</div>
+  <div class="nav-links">
+    <div class="nl" onclick="go('index.html')">홈</div>
+    <div class="nl" onclick="go('macro.html')">매크로</div>
+    <div class="nl act">리서치</div>
+    <div class="nl" onclick="go('quant.html')">퀀트</div>
+    <div class="nl" onclick="go('calendar.html')">캘린더</div>
+  </div>
+  <div class="topbar-r">
+    <div class="chip"><div class="chip-dot" id="kr-dot"></div><span id="kr-st">KRX</span></div>
+    <div class="chip"><div class="chip-dot" id="us-dot"></div><span id="us-st">NYSE</span></div>
+    <div class="clk" id="clk">—</div>
+    <button class="kis-pill" id="kis-btn" onclick="toggleKis()">⚙ KIS API</button>
+  </div>
+</div>
+
+<div class="page">
+  <div class="left-panel">
+
+    <div class="card">
+      <div class="card-title">분석 모드</div>
+      <div class="mode-tabs">
+        <div class="mtab act" id="mode-analysis" onclick="setMode('analysis')">
+          <div class="mtab-icon">🔬</div>
+          <div class="mtab-label">종목 분석</div>
+          <div class="mtab-desc">밸류에이션 + 시나리오</div>
+        </div>
+        <div class="mtab" id="mode-compounder" onclick="setMode('compounder')">
+          <div class="mtab-icon">🔭</div>
+          <div class="mtab-label">컴파운더 탐색</div>
+          <div class="mtab-desc">유사 장기복리 후보</div>
+        </div>
+        <div class="mtab" id="mode-framework" onclick="setMode('framework')">
+          <div class="mtab-icon">📋</div>
+          <div class="mtab-label">리서치 프레임워크</div>
+          <div class="mtab-desc">체크리스트 + 스코어카드</div>
+        </div>
+        <div class="mtab" id="mode-memo" onclick="setMode('memo')">
+          <div class="mtab-icon">✏️</div>
+          <div class="mtab-label">아이디어 메모</div>
+          <div class="mtab-desc">트레이딩 아이디어</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label" id="ticker-label">티커 / 종목명</div>
+        <input class="fi" id="ticker-input" type="text" placeholder="예: NVDA, AAPL, 005930">
+      </div>
+      <div class="field">
+        <div class="field-label" id="view-label">내 관점 (선택)</div>
+        <textarea class="fi" id="view-input" rows="3" placeholder="예: AI 사이클 피크, 밸류 부담"></textarea>
+      </div>
+      <div id="memo-extra" style="display:none" class="field">
+        <div class="field-label">아이디어 본문</div>
+        <textarea class="fi" id="memo-body" rows="5" placeholder="자유롭게 작성..."></textarea>
+      </div>
+
+      <div class="adv-toggle" onclick="toggleAdv()">
+        <span class="adv-arrow" id="adv-arrow">▶</span>
+        <span>고급 옵션 — 재무자료 PDF 첨부</span>
+      </div>
+      <div class="adv-body" id="adv-body">
+        <div class="upload-area" id="upload-area" onclick="document.getElementById('pdf-input').click()">
+          <div class="upload-text">📄 <strong>클릭하여 PDF 첨부</strong><br>10-K, 사업보고서, IR 자료</div>
+        </div>
+        <input type="file" id="pdf-input" accept=".pdf" onchange="handlePDF(this)">
+      </div>
+
+      <button class="gen-btn" id="gen-btn" onclick="generate()">⚡ 분석 생성</button>
+    </div>
+
+    <div class="card">
+      <div class="bk-head">
+        <div class="card-title" style="margin-bottom:0">저장된 분석</div>
+        <div class="bk-count" id="bk-count">0</div>
+      </div>
+      <div class="bk-list" id="bk-list">
+        <div class="bk-empty">저장된 분석이 없습니다</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="right-panel">
+    <div class="output-card">
+      <div class="oc-head">
+        <div>
+          <div class="oc-title" id="oc-title">분석 결과</div>
+          <div class="oc-meta" id="oc-meta">모드 선택 → 종목 입력 → 생성</div>
+        </div>
+        <div class="oc-actions" id="oc-actions" style="display:none">
+          <button class="oc-btn" onclick="copyResult()">복사</button>
+          <button class="oc-btn save" onclick="saveResult()">저장</button>
+        </div>
+      </div>
+      <div id="oc-content">
+        <div class="oc-placeholder">
+          <div class="oc-ph-icon">🧠</div>
+          <div class="oc-ph-title">AI 리서치 워크벤치</div>
+          <div class="oc-ph-desc">분석 모드를 선택하고<br>종목을 입력하세요.<br><br>저장된 분석은 하단 북마크에서<br>언제든 불러올 수 있습니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bnav">
+  <div class="bni" onclick="go('index.html')"><div class="bni-icon">🏠</div><div class="bni-label">홈</div></div>
+  <div class="bni" onclick="go('macro.html')"><div class="bni-icon">🌐</div><div class="bni-label">매크로</div></div>
+  <div class="bni act"><div class="bni-icon">🔍</div><div class="bni-label">리서치</div></div>
+  <div class="bni" onclick="go('quant.html')"><div class="bni-icon">⚡</div><div class="bni-label">퀀트</div></div>
+  <div class="bni" onclick="go('calendar.html')"><div class="bni-icon">📅</div><div class="bni-label">캘린더</div></div>
+</div>
+
+<div id="kis-panel">
+  <span class="kp-close" onclick="toggleKis()">← 닫기</span>
+  <div class="kp-logo">🤖 Anthropic API</div>
+  <div class="kp-sub">AI 리서치 분석</div>
+  <div class="kp-lbl">API Key</div>
+  <input class="kp-in" id="ant-key" type="password" placeholder="sk-ant-..." spellcheck="false">
+  <button class="kp-save" onclick="saveAnt()" style="margin-bottom:6px">저장</button>
+  <div id="ant-st" style="font-size:11px;margin-top:4px;color:var(--t3);margin-bottom:20px"></div>
+  <div style="border-top:1px solid rgba(255,255,255,.06);margin-bottom:20px"></div>
+  <div class="kp-logo">📈 KIS API</div>
+  <div class="kp-sub">한국투자증권 OpenAPI</div>
+  <div class="kp-lbl">App Key</div>
+  <input class="kp-in" id="kp-key" type="text" placeholder="App Key" spellcheck="false">
+  <div class="kp-lbl">App Secret</div>
+  <input class="kp-in" id="kp-sec" type="password" placeholder="App Secret">
+  <div class="kp-lbl">계좌번호 앞 8자리 (선택)</div>
+  <input class="kp-in" id="kp-acc" type="text" placeholder="12345678" maxlength="8">
+  <button class="kp-save" onclick="saveKis()">저장</button>
+  <div id="kp-st" style="font-size:11px;margin-top:10px;color:var(--t3)"></div>
+</div>
+
+<script>
+const go=u=>location.href=u;
+function tick(){
+  const now=new Date(),kst=new Date(now.toLocaleString("en-US",{timeZone:"Asia/Seoul"})),et=new Date(now.toLocaleString("en-US",{timeZone:"America/New_York"}));
+  const p=n=>String(n).padStart(2,"0");
+  document.getElementById("clk").textContent=p(kst.getHours())+":"+p(kst.getMinutes())+":"+p(kst.getSeconds());
+  const kH=kst.getHours()*60+kst.getMinutes(),kD=kst.getDay(),kO=kD>=1&&kD<=5&&kH>=540&&kH<930;
+  document.getElementById("kr-dot").className="chip-dot "+(kO?"open":"closed");
+  document.getElementById("kr-st").textContent="KRX "+(kO?"OPEN":"CLOSED");
+  const uH=et.getHours()*60+et.getMinutes(),uD=et.getDay(),uO=uD>=1&&uD<=5&&uH>=570&&uH<960;
+  document.getElementById("us-dot").className="chip-dot "+(uO?"open":"closed");
+  document.getElementById("us-st").textContent="NYSE "+(uO?"OPEN":"CLOSED");
+  setTimeout(tick,1000);
+}
+tick();
+
+let advOpen=false;
+function toggleAdv(){
+  advOpen=!advOpen;
+  document.getElementById("adv-body").style.display=advOpen?"block":"none";
+  document.getElementById("adv-arrow").style.transform=advOpen?"rotate(90deg)":"rotate(0deg)";
+}
+
+let currentMode="analysis",pdfBase64=null,currentResult="",currentTicker="";
+const MODE={
+  analysis:{tl:"티커 / 종목명",tp:"예: NVDA, AAPL, 005930",vl:"내 관점 (선택)",vp:"예: AI 사이클 피크, 밸류 부담",memo:false,btn:"⚡ 종목 분석 생성"},
+  compounder:{tl:"기준 종목",tp:"예: NVDA (이 종목과 유사한 컴파운더 탐색)",vl:"추가 조건 (선택)",vp:"예: 아시아 노출 큰 기업 선호",memo:false,btn:"🔭 컴파운더 탐색"},
+  framework:{tl:"분석 대상",tp:"예: TSLA, 삼성전자",vl:"중점 항목 (선택)",vp:"예: 경쟁 우위와 마진 지속가능성 집중",memo:false,btn:"📋 프레임워크 생성"},
+  memo:{tl:"관련 종목/섹터 (선택)",tp:"예: 반도체, NVDA",vl:"아이디어 제목",vp:"예: AI 서버 수요 둔화 시 수혜",memo:true,btn:"✏️ 아이디어 분석"},
+};
+function setMode(m){
+  currentMode=m;
+  Object.keys(MODE).forEach(k=>document.getElementById("mode-"+k).classList.toggle("act",k===m));
+  const c=MODE[m];
+  document.getElementById("ticker-label").textContent=c.tl;
+  document.getElementById("ticker-input").placeholder=c.tp;
+  document.getElementById("view-label").textContent=c.vl;
+  document.getElementById("view-input").placeholder=c.vp;
+  document.getElementById("memo-extra").style.display=c.memo?"block":"none";
+  document.getElementById("gen-btn").textContent=c.btn;
+}
+function handlePDF(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    pdfBase64=e.target.result.split(",")[1];
+    document.getElementById("upload-area").classList.add("has-file");
+    document.getElementById("upload-area").innerHTML="<div class=\"upload-text\">✅ <strong>"+file.name+"</strong><br>"+Math.round(file.size/1024)+"KB</div>";
+  };
+  reader.readAsDataURL(file);
+}
+
+const TODAY=new Date().toISOString().slice(0,10);
+const PREAMBLE="당신은 15년 경력의 헤지펀드 매니저이자 CFA 자격 보유자입니다. 문체보다 정확성을 우선하며, 검증 가능한 데이터와 확률적 사고에 기반해 답하세요.\n\n기준일: "+TODAY+"\n기본 매크로 시나리오: AI Capex 사이클 피크 논란 + 정책금리 4.25~4.50%\n투자 스타일: 3~5년 장기 보유형, NTM P/E 40배 이상 경계 (업종 부적절 시 대체 metric 명시)\n\n공통 원칙:\n1) 분석 프레임워크 5~7개 먼저 제시 (단계별 핵심 판단기준 1~2문장)\n2) 본문 순서: 핵심 데이터 스냅샷 → 분석 → 시나리오 → 결론\n3) 사실(fact)/해석(inference)/시나리오(scenario) 명확히 구분\n4) 공시(10-K/Q, earnings call) 최우선 → 시장데이터 → 2차출처 → X/소셜(보조만)\n5) 접근불가 출처는 \"확인 불가\", 수치 부족 시 \"데이터 부족\" 명시\n6) 핵심 주장 5개에 수치 근거 + 비교기준(YoY/QoQ/가이던스/피어) 각 1개\n7) 비교기업 자동선택 (고정 예시 금지), 업종별 적절한 valuation metric\n8) 핵심 팩트에 출처 유형과 시점 표시: (FY2025 10-K), (Q4 earnings call)\n9) 마지막: 실행 가능한 결론 + 추가 질문 3개";
+
+function buildPrompt(ticker,view){
+  const vp=view?"\n분석자 관점: "+view+"\n":"";
+  if(currentMode==="analysis")return PREAMBLE+"\n\n---\n\n위 프리앰블을 적용하여 ["+ticker+"]를 분석하라."+vp+"\n\n반드시 포함:\n1) 비즈니스 모델: 부문별 매출구조, 고객군, 가격결정력, 반복매출\n2) 수익 동인: 향후 1~3년 핵심 revenue driver 3개 + 추적 KPI\n3) 경쟁 우위: 기술/생태계/switching cost/브랜드/규제장벽\n4) 주요 위험 5개\n5) 장기 성장: 3~5년 revenue CAGR, margin expansion, FCF 전환력\n6) 비교기업 2~3개: 성장률/gross margin/operating margin/EV·Sales/NTM P·E/FCF yield\n7) 시나리오: Base/Bull/Bear 각각 수치로\n8) 결론: 매수/관망/회피 + 3~5년 보유 적합성\n\n출력:\nA. 분석 프레임워크\nB. 핵심 데이터 스냅샷 표\nC. 본문 분석\nD. Base/Bull/Bear 시나리오 표\nE. 최종 결론\nF. 추가 질문 3개";
+  if(currentMode==="compounder")return PREAMBLE+"\n\n---\n\n위 프리앰블을 적용하여 ["+ticker+"]와 유사한 장기 복리(compounder) 후보를 찾아라."+vp+"\n\n먼저 ["+ticker+"]의 특징을 3개 축으로 정의:\n- 성장 엔진\n- 마진 구조\n- 경쟁 우위\n\n그 3개 축에 맞는 상장사 5개 선별 (유동성 낮은 종목 제외)\n\n반드시 포함:\n1) ["+ticker+"] 핵심 특성 정의\n2) 후보 5개: 유사성/성장성/마진품질/경쟁우위/valuation sanity check\n3) Bull/Bear thesis (각 후보)\n4) 최종 우선순위: 가장 유사 1개 / 가장 저평가 1개 / 실행리스크 낮은 1개\n\n출력:\nA. 분석 프레임워크\nB. ["+ticker+"] 특성 정의\nC. 후보 5개 비교 표\nD. 후보별 투자 논지\nE. 최종 우선순위\nF. 추가 질문 3개";
+  if(currentMode==="framework")return PREAMBLE+"\n\n---\n\n위 프리앰블을 적용하여 ["+ticker+"] 투자를 위한 연구 프레임워크를 구축하고 예비 적용하라."+vp+"\n\n반드시 포함:\n1) 5~7단계 프레임워크 + 단계별 핵심 질문 + 통과/탈락 기준\n2) 필수 재무지표: 매출성장률/gross margin/operating margin/FCF margin/ROIC\n3) 경쟁 우위: moat 유형/지속가능성/경쟁 압력\n4) 경영진: 가이던스 신뢰도/자본배분/희석/M&A 성향\n5) Red flags: 고객집중/회계품질/지속적희석/과도한Capex/구조적마진훼손\n6) 스코어카드: 1~10점 + A/B/C 등급 (비즈니스25/경영진15/재무20/밸류에이션20/리스크20)\n7) Bull/Bear 관점\n\n출력:\nA. 분석 프레임워크\nB. 연구 체크리스트\nC. 스코어카드 템플릿\nD. ["+ticker+"] 예비 적용\nE. 최종 등급과 결론\nF. 추가 질문 3개";
+  const body=document.getElementById("memo-body").value;
+  return PREAMBLE+"\n\n---\n\n다음 트레이딩 아이디어를 structured 형식으로 정리하라.\n"+(ticker?"관련 종목/섹터: "+ticker:"")+(view?"\n제목: "+view:"")+(body?"\n\n내용:\n"+body:"")+"\n\n출력:\n1) 아이디어 요약 (2~3줄)\n2) 핵심 논리 (Bull case)\n3) 반론 및 리스크 (Bear case)\n4) 관련 종목 3개 + 근거\n5) 모니터링 지표 3개\n6) 실행 가능성 (High/Medium/Low) + 이유";
+}
+
+async function generate(){
+  const apiKey=localStorage.getItem("ant_key");
+  if(!apiKey){
+    document.getElementById("oc-content").innerHTML="<div class=\"oc-body\"><div class=\"error-bar\">⚙️ API 키가 없습니다. 우상단 <strong>⚙ KIS API</strong> → Anthropic API Key를 먼저 저장하세요.</div></div>";
+    return;
+  }
+  const ticker=document.getElementById("ticker-input").value.trim();
+  const view=document.getElementById("view-input").value.trim();
+  if(!ticker&&currentMode!=="memo"){document.getElementById("ticker-input").focus();return;}
+  const btn=document.getElementById("gen-btn");
+  btn.disabled=true;btn.textContent="생성 중...";
+  currentResult="";currentTicker=ticker||"메모";
+  document.getElementById("oc-content").innerHTML="<div class=\"oc-body\" id=\"streaming-body\"></div>";
+  document.getElementById("oc-title").textContent=ticker||"아이디어";
+  document.getElementById("oc-meta").textContent=MODE[currentMode].btn.slice(2)+" · "+new Date().toLocaleTimeString("ko-KR");
+  document.getElementById("oc-actions").style.display="none";
+  const messages=[{role:"user",content:[{type:"text",text:buildPrompt(ticker,view)}]}];
+  if(pdfBase64)messages[0].content.unshift({type:"document",source:{type:"base64",media_type:"application/pdf",data:pdfBase64}});
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","anthropic-dangerous-direct-browser-access":"true","x-api-key":apiKey,"anthropic-version":"2023-06-01"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:4000,stream:true,messages,
+        system:"You are a seasoned hedge fund manager and CFA. Always respond in Korean. Use markdown: ## for sections, ### for subsections, tables, bullet points."})
+    });
+    if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||resp.statusText);}
+    const reader=resp.body.getReader(),dec=new TextDecoder();
+    while(true){
+      const{done,value}=await reader.read();if(done)break;
+      for(const line of dec.decode(value).split("\n")){
+        if(!line.startsWith("data:"))continue;
+        const d=line.slice(5).trim();if(d==="[DONE]")continue;
+        try{
+          const j=JSON.parse(d);
+          if(j.type==="content_block_delta"&&j.delta?.text){
+            currentResult+=j.delta.text;
+            const b=document.getElementById("streaming-body");
+            if(b)b.innerHTML=mdToHtml(currentResult)+"<span class=\"cursor\"></span>";
+          }
+        }catch(_){}
+      }
+    }
+    const b=document.getElementById("streaming-body");
+    if(b)b.innerHTML=mdToHtml(currentResult);
+    document.getElementById("oc-actions").style.display="flex";
+  }catch(err){
+    const b=document.getElementById("streaming-body");
+    if(b)b.innerHTML="<div class=\"error-bar\">⚠️ "+err.message+"</div>";
+  }
+  btn.disabled=false;btn.textContent=MODE[currentMode].btn;
+}
+
+function mdToHtml(md){
+  return md
+    .replace(/^### (.+)$/gm,"<h3>$1</h3>")
+    .replace(/^## (.+)$/gm,"<h2>$1</h2>")
+    .replace(/^# (.+)$/gm,"<h1>$1</h1>")
+    .replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
+    .replace(/`([^`]+)`/g,"<code>$1</code>")
+    .replace(/^> (.+)$/gm,"<blockquote>$1</blockquote>")
+    .replace(/^\|(.+)\|$/gm,m=>{
+      const cells=m.split("|").filter((_,i,a)=>i>0&&i<a.length-1);
+      return "<tr>"+cells.map(c=>"<td>"+c.trim()+"</td>").join("")+"</tr>";
+    })
+    .replace(/(<tr>[\s\S]*?<\/tr>
+?)+/g,t=>"<table>"+t+"</table>")
+    .replace(/^[-*] (.+)$/gm,"<li>$1</li>")
+    .replace(/(<li>.*<\/li>
+?)+/g,m=>"<ul>"+m+"</ul>")
+    .replace(/\[Bull\]/gi,"<span class=\"tag-bull\">Bull</span>")
+    .replace(/\[Bear\]/gi,"<span class=\"tag-bear\">Bear</span>")
+    .replace(/\n\n/g,"</p><p>")
+    .replace(/^(?!<)/gm,"");
+}
+
+const BK_KEY="research_bk_v3";
+function getBK(){try{return JSON.parse(localStorage.getItem(BK_KEY)||"[]");}catch{return[];}}
+function setBK(a){localStorage.setItem(BK_KEY,JSON.stringify(a));}
+function saveResult(){
+  if(!currentResult)return;
+  const arr=getBK();
+  arr.unshift({id:Date.now(),mode:currentMode,ticker:currentTicker,date:new Date().toLocaleDateString("ko-KR"),content:currentResult});
+  setBK(arr);renderBK();
+  const btn=document.querySelector(".oc-btn.save");
+  btn.textContent="✓ 저장됨";setTimeout(()=>btn.textContent="저장",2000);
+}
+function copyResult(){
+  navigator.clipboard.writeText(currentResult);
+  document.querySelector(".oc-btn:not(.save)").textContent="✓ 복사됨";
+  setTimeout(()=>document.querySelector(".oc-btn:not(.save)").textContent="복사",2000);
+}
+function loadBK(id){
+  const item=getBK().find(b=>b.id===id);if(!item)return;
+  currentResult=item.content;currentTicker=item.ticker;
+  setMode(item.mode);
+  document.getElementById("ticker-input").value=item.ticker;
+  document.getElementById("oc-content").innerHTML="<div class=\"oc-body\">"+mdToHtml(item.content)+"</div>";
+  document.getElementById("oc-title").textContent=item.ticker;
+  document.getElementById("oc-meta").textContent=item.mode+" · "+item.date;
+  document.getElementById("oc-actions").style.display="flex";
+  document.querySelectorAll(".bk-item").forEach(el=>el.classList.toggle("act",+el.dataset.id===id));
+}
+function delBK(id,e){e.stopPropagation();setBK(getBK().filter(b=>b.id!==id));renderBK();}
+const ML={analysis:"종목 분석",compounder:"컴파운더",framework:"프레임워크",memo:"아이디어"};
+function renderBK(){
+  const arr=getBK();
+  document.getElementById("bk-count").textContent=arr.length;
+  const list=document.getElementById("bk-list");
+  if(!arr.length){list.innerHTML="<div class=\"bk-empty\">저장된 분석이 없습니다</div>";return;}
+  list.innerHTML=arr.map(b=>"<div class=\"bk-item\" data-id=\""+b.id+"\" onclick=\"loadBK("+b.id+")\">"+"<div class=\"bk-dot "+b.mode+"\"></div>"+"<div style=\"flex:1;min-width:0\"><div class=\"bk-sym\">"+b.ticker+"</div><div class=\"bk-mode\">"+ML[b.mode]+"</div></div>"+"<div style=\"display:flex;flex-direction:column;align-items:flex-end;gap:4px\"><div class=\"bk-date\">"+b.date+"</div><div class=\"bk-del\" onclick=\"delBK("+b.id+",event)\">✕</div></div></div>").join("");
+}
+function toggleKis(){
+  const p=document.getElementById("kis-panel");
+  p.style.display=(p.style.display==="none"||!p.style.display)?"block":"none";
+  if(p.style.display==="block"){
+    const ak=localStorage.getItem("ant_key")||"";
+    document.getElementById("ant-key").value=ak?"••••••••••••••••":"";
+    document.getElementById("ant-st").textContent=ak?"✓ 저장됨":"미입력";
+    document.getElementById("kp-key").value=localStorage.getItem("kis_appkey")||"";
+    document.getElementById("kp-sec").value=localStorage.getItem("kis_appsecret")||"";
+    document.getElementById("kp-acc").value=localStorage.getItem("kis_accno")||"";
+  }
+}
+function saveAnt(){
+  const k=document.getElementById("ant-key").value.trim();
+  if(!k||k.startsWith("•"))return;
+  localStorage.setItem("ant_key",k);
+  document.getElementById("ant-st").textContent="✓ 저장됨";
+  document.getElementById("ant-key").value="••••••••••••••••";
+}
+function saveKis(){
+  const k=document.getElementById("kp-key").value.trim(),s=document.getElementById("kp-sec").value.trim(),a=document.getElementById("kp-acc").value.trim();
+  if(!k||!s)return;
+  localStorage.setItem("kis_appkey",k);localStorage.setItem("kis_appsecret",s);if(a)localStorage.setItem("kis_accno",a);
+  document.getElementById("kp-st").textContent="✓ 저장됨";
+}
+document.getElementById("ticker-input").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey)generate();});
+renderBK();
+</script>
+</body>
+</html>
