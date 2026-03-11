@@ -253,7 +253,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--ui);font-size:13px;m
     <div class="brief-head">
       <div>
         <div class="brief-title">AI 데일리 브리핑</div>
-        <div class="brief-meta" id="brief-meta">지표 로드 완료 후 자동 생성</div>
+        <div class="brief-meta" id="brief-meta">생성 버튼을 눌러 브리핑을 시작하세요</div>
       </div>
       <div class="brief-actions">
         <button class="brief-btn" onclick="copyBrief()">복사</button>
@@ -315,15 +315,39 @@ function tick(){
 tick();
 
 /* ── Yahoo Finance ── */
-async function fetchY(sym){
-  try{
-    const r=await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=5d`);
-    const d=await r.json();
-    const meta=d.chart.result[0].meta;
-    const cur=meta.regularMarketPrice, prev=meta.regularMarketPreviousClose;
-    const chg=cur-prev, pct=(chg/prev)*100;
-    return{cur,prev,chg,pct};
-  }catch(e){return null;}
+async function fetchY(sym,range='5d'){
+  const base=`https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=${range}`;
+  const proxy=`https://api.allorigins.win/raw?url=${encodeURIComponent(base)}`;
+  for(const url of [base, proxy]){
+    try{
+      const r=await fetch(url,{headers:{'Accept':'application/json'}});
+      if(!r.ok) continue;
+      const d=await r.json();
+      const res=d.chart?.result?.[0];
+      if(!res) continue;
+      const meta=res.meta;
+      const cur=meta.regularMarketPrice, prev=meta.regularMarketPreviousClose||cur;
+      const chg=cur-prev, pct=prev?(chg/prev)*100:0;
+      const q=res.indicators?.quote?.[0]||{};
+      const closes=(q.close||[]).filter(v=>v!=null);
+      const highs=(q.high||[]).filter(v=>v!=null);
+      const lows=(q.low||[]).filter(v=>v!=null);
+      const h52=meta.fiftyTwoWeekHigh||Math.max(...closes,cur);
+      const l52=meta.fiftyTwoWeekLow||Math.min(...closes,cur);
+      const pos52=h52>l52?(cur-l52)/(h52-l52)*100:50;
+      const d1=pct;
+      const d5=closes.length>=6?(cur-closes[closes.length-6])/closes[closes.length-6]*100:null;
+      const d21=closes.length>=22?(cur-closes[closes.length-22])/closes[closes.length-22]*100:null;
+      let g=0,ls=0;
+      for(let i=closes.length-14;i<closes.length-1;i++){if(i<0)continue;const ch=closes[i+1]-closes[i];if(ch>0)g+=ch;else ls-=ch;}
+      const rsi=ls>0?100-(100/(1+g/ls)):50;
+      const bars=[];
+      const ts=res.timestamp||[];
+      for(let i=0;i<(q.close||[]).length;i++) if(q.close[i]!=null) bars.push({c:q.close[i],h:(q.high||[])[i]||q.close[i],l:(q.low||[])[i]||q.close[i],t:ts[i]||0});
+      return{cur,prev,chg,pct,d1,d5,d21,pos52,rsi,h52,l52,bars};
+    }catch(e){continue;}
+  }
+  return null;
 }
 
 function fmt(v,dec=2){return v!=null?(v>=0?'+':'')+v.toFixed(dec)+'%':'—';}
@@ -618,9 +642,9 @@ function saveKis(){
 async function init(){
   renderCal();
   await Promise.all([loadIndices(), loadMacro()]);
-  // 매크로 로드 완료 → AI 브리핑 자동 생성
-  document.getElementById('regen-btn').disabled=false;
-  genBrief();
+  // 브리핑 버튼 활성화 (수동 실행)
+  const btn=document.getElementById('regen-btn');
+  btn.disabled=false; btn.textContent='생성';
   // 폴링
   setInterval(loadIndices, 120000);   // 지수 2분
   setInterval(loadMacro,   300000);   // 매크로 5분

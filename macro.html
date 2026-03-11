@@ -323,7 +323,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--ui);font-size:13px;m
         <div class="ai-head">
           <div>
             <div class="ai-title">AI 매크로 코멘트</div>
-            <div class="ai-meta" id="ai-meta">데이터 로드 후 자동 생성</div>
+            <div class="ai-meta" id="ai-meta">생성 버튼을 눌러 분석을 시작하세요</div>
           </div>
           <div class="ai-actions">
             <button class="ai-btn" onclick="copyAI()">복사</button>
@@ -333,7 +333,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--ui);font-size:13px;m
         <div class="ai-body" id="ai-body">
           <div class="ai-placeholder">
             <div class="ai-ph-icon">📡</div>
-            <div class="ai-ph-text">경제지표 데이터를 수집 중입니다...<br>완료 후 자동으로 매크로 분석을 생성합니다.</div>
+            <div class="ai-ph-text">생성 버튼을 눌러 매크로 분석을 시작하세요</div>
           </div>
         </div>
       </div>
@@ -429,17 +429,22 @@ document.getElementById('fomc-d').textContent = diff > 0 ? diff : '오늘';
 
 // ── Yahoo Finance fetch ────────────────────────────────
 async function fetchY(sym) {
-  try {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=5d`;
-    const r = await fetch(url);
-    const d = await r.json();
-    const meta = d.chart.result[0].meta;
-    const cur = meta.regularMarketPrice;
-    const prev = meta.regularMarketPreviousClose;
-    const chg = cur - prev;
-    const chgPct = (chg / prev) * 100;
-    return { cur, prev, chg, chgPct };
-  } catch(e) { return null; }
+  const enc=encodeURIComponent(sym);
+  const base=`https://query2.finance.yahoo.com/v8/finance/chart/${enc}?interval=1d&range=5d`;
+  const proxy=`https://api.allorigins.win/raw?url=${encodeURIComponent(base)}`;
+  for(const url of [base, proxy]){
+    try{
+      const r=await fetch(url,{headers:{'Accept':'application/json'}});
+      if(!r.ok) continue;
+      const d=await r.json();
+      const res=d.chart?.result?.[0]; if(!res) continue;
+      const meta=res.meta;
+      const cur=meta.regularMarketPrice, prev=meta.regularMarketPreviousClose||cur;
+      const chg=cur-prev, chgPct=prev?(chg/prev)*100:0;
+      return{cur,prev,chg,chgPct};
+    }catch(e){continue;}
+  }
+  return null;
 }
 
 // ── 경제지표 데이터 (하드코딩 + 최신 수동 업데이트) ──────
@@ -512,8 +517,9 @@ function loadData() {
   // PMI
   renderPMI();
   document.getElementById('pmi-ts').textContent = '2025년 3월 기준';
-  // AI 자동 생성
-  genAI();
+  // AI 버튼 활성화 (수동 실행)
+  const regenBtn=document.getElementById('regen-btn');
+  if(regenBtn){regenBtn.disabled=false;regenBtn.textContent='생성';}
 }
 
 // ── AI 매크로 코멘트 ───────────────────────────────────
