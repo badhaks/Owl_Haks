@@ -377,26 +377,46 @@ function switchPTab(t){
 
 /* ── Yahoo Finance ── */
 async function fetchY(sym,range='5d'){
-  try{
-    const r=await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=${range}`);
+  const enc=encodeURIComponent(sym);
+  const yUrl=`https://query2.finance.yahoo.com/v8/finance/chart/${enc}?interval=1d&range=${range}&corsDomain=finance.yahoo.com`;
+  const proxies=[
+    `https://corsproxy.io/?${encodeURIComponent(yUrl)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(yUrl)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yUrl)}`,
+  ];
+  const timeout=ms=>new Promise((_,r)=>setTimeout(()=>r('timeout'),ms));
+  async function tryFetch(url){
+    const r=await Promise.race([fetch(url,{headers:{'Accept':'application/json'}}),timeout(8000)]);
+    if(typeof r==='string') throw r;
+    if(!r.ok) throw r.status;
     const d=await r.json();
-    const res=d.chart.result[0]; const meta=res.meta;
-    const q=res.indicators.quote[0];
-    const closes=q.close; const highs=q.high; const lows=q.low;
-    const valid=[]; const ts=res.timestamp||[];
-    for(let i=0;i<closes.length;i++) if(closes[i]!=null) valid.push({c:closes[i],h:highs?.[i]||closes[i],l:lows?.[i]||closes[i],t:ts[i]||0});
-    const cur=meta.regularMarketPrice; const prev=meta.regularMarketPreviousClose;
-    const d1=(cur-prev)/prev*100;
-    const d5=valid.length>=6?(cur-valid[valid.length-6].c)/valid[valid.length-6].c*100:null;
-    const d21=valid.length>=22?(cur-valid[valid.length-22].c)/valid[valid.length-22].c*100:null;
-    const h52=meta.fiftyTwoWeekHigh||Math.max(...valid.map(v=>v.h));
-    const l52=meta.fiftyTwoWeekLow||Math.min(...valid.map(v=>v.l));
-    const pos52=h52>l52?(cur-l52)/(h52-l52)*100:50;
-    let g=0,ls=0;
-    for(let i=valid.length-14;i<valid.length-1;i++){if(i<0)continue;const ch=valid[i+1].c-valid[i].c;if(ch>0)g+=ch;else ls-=ch;}
-    const rsi=ls>0?100-(100/(1+g/ls)):50;
-    return{sym:meta.symbol||sym,cur,prev,d1,d5,d21,pos52,rsi,h52,l52,bars:valid};
-  }catch(e){return null;}
+    const res=d.chart?.result?.[0]; if(!res) throw 'no result';
+    return res;
+  }
+  for(const url of [yUrl,...proxies]){
+    try{
+      const res=await tryFetch(url);
+      const meta=res.meta;
+      const cur=meta.regularMarketPrice, prev=meta.regularMarketPreviousClose||cur;
+      const chg=cur-prev, pct=prev?(chg/prev)*100:0;
+      const q=res.indicators?.quote?.[0]||{};
+      const closes=(q.close||[]).filter(v=>v!=null);
+      const h52=meta.fiftyTwoWeekHigh||Math.max(...closes,cur);
+      const l52=meta.fiftyTwoWeekLow||Math.min(...closes,cur);
+      const pos52=h52>l52?(cur-l52)/(h52-l52)*100:50;
+      const d1=pct;
+      const d5=closes.length>=6?(cur-closes[closes.length-6])/closes[closes.length-6]*100:null;
+      const d21=closes.length>=22?(cur-closes[closes.length-22])/closes[closes.length-22]*100:null;
+      let g=0,ls=0;
+      for(let i=closes.length-14;i<closes.length-1;i++){if(i<0)continue;const ch=closes[i+1]-closes[i];if(ch>0)g+=ch;else ls-=ch;}
+      const rsi=ls>0?100-(100/(1+g/ls)):50;
+      const ts=res.timestamp||[];
+      const bars=[];
+      for(let i=0;i<(q.close||[]).length;i++) if(q.close[i]!=null) bars.push({c:q.close[i],h:(q.high||[])[i]||q.close[i],l:(q.low||[])[i]||q.close[i],t:ts[i]||0});
+      return{cur,prev,chg,pct,d1,d5,d21,pos52,rsi,h52,l52,bars};
+    }catch(e){continue;}
+  }
+  return null;
 }
 
 /* ── 히트맵 ── */

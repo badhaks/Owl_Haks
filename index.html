@@ -316,22 +316,30 @@ tick();
 
 /* ── Yahoo Finance ── */
 async function fetchY(sym,range='5d'){
-  const base=`https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=${range}`;
-  const proxy=`https://api.allorigins.win/raw?url=${encodeURIComponent(base)}`;
-  for(const url of [base, proxy]){
+  const enc=encodeURIComponent(sym);
+  const yUrl=`https://query2.finance.yahoo.com/v8/finance/chart/${enc}?interval=1d&range=${range}&corsDomain=finance.yahoo.com`;
+  const proxies=[
+    `https://corsproxy.io/?${encodeURIComponent(yUrl)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(yUrl)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yUrl)}`,
+  ];
+  const timeout=ms=>new Promise((_,r)=>setTimeout(()=>r('timeout'),ms));
+  async function tryFetch(url){
+    const r=await Promise.race([fetch(url,{headers:{'Accept':'application/json'}}),timeout(8000)]);
+    if(typeof r==='string') throw r;
+    if(!r.ok) throw r.status;
+    const d=await r.json();
+    const res=d.chart?.result?.[0]; if(!res) throw 'no result';
+    return res;
+  }
+  for(const url of [yUrl,...proxies]){
     try{
-      const r=await fetch(url,{headers:{'Accept':'application/json'}});
-      if(!r.ok) continue;
-      const d=await r.json();
-      const res=d.chart?.result?.[0];
-      if(!res) continue;
+      const res=await tryFetch(url);
       const meta=res.meta;
       const cur=meta.regularMarketPrice, prev=meta.regularMarketPreviousClose||cur;
       const chg=cur-prev, pct=prev?(chg/prev)*100:0;
       const q=res.indicators?.quote?.[0]||{};
       const closes=(q.close||[]).filter(v=>v!=null);
-      const highs=(q.high||[]).filter(v=>v!=null);
-      const lows=(q.low||[]).filter(v=>v!=null);
       const h52=meta.fiftyTwoWeekHigh||Math.max(...closes,cur);
       const l52=meta.fiftyTwoWeekLow||Math.min(...closes,cur);
       const pos52=h52>l52?(cur-l52)/(h52-l52)*100:50;
@@ -341,8 +349,8 @@ async function fetchY(sym,range='5d'){
       let g=0,ls=0;
       for(let i=closes.length-14;i<closes.length-1;i++){if(i<0)continue;const ch=closes[i+1]-closes[i];if(ch>0)g+=ch;else ls-=ch;}
       const rsi=ls>0?100-(100/(1+g/ls)):50;
-      const bars=[];
       const ts=res.timestamp||[];
+      const bars=[];
       for(let i=0;i<(q.close||[]).length;i++) if(q.close[i]!=null) bars.push({c:q.close[i],h:(q.high||[])[i]||q.close[i],l:(q.low||[])[i]||q.close[i],t:ts[i]||0});
       return{cur,prev,chg,pct,d1,d5,d21,pos52,rsi,h52,l52,bars};
     }catch(e){continue;}
